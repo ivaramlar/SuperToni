@@ -16,6 +16,9 @@ public interface UserRepository extends CrudRepository<User,Integer> {
     @Query("SELECT DISTINCT u FROM User u WHERE u.id = :id")
     public User getUserById(Integer id);
 
+    @Query("SELECT DISTINCT u FROM User u WHERE u.userName = :name")
+    public User getUserByName(String name);
+
     Optional<User> findByUserName(String userName);
     boolean existsByUserName(String userName);
 
