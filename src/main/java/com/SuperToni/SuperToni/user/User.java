@@ -23,6 +23,7 @@ public class User extends BaseEntity{
     @Size(min=3, max=20)
     private String userName;
 
+    @NonNull
     private String password;
 
     @NotNull

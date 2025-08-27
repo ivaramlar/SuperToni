@@ -31,3 +31,37 @@ build/
 
 ### VS Code ###
 .vscode/
+
+
+### Java ###
+*.class
+*.war
+*.ear
+
+### Logs ###
+*.log
+
+
+### Build ###
+/target/
+/build/
+/out/
+
+### OS ###
+.DS_Store
+Thumbs.db
+
+### Spring Boot config ###
+# Ignore local locales configuration with credential
+src/main/resources/application.properties
+src/main/resources/application.yml
+
+# Mantain local configuration without credential
+!src/main/resources/application-example.properties
+!src/main/resources/application-example.yml
+
+### JWT keys ###
+# Ignore keys belonging to resources/jwt
+src/main/resources/jwt/*.key
+src/main/resources/jwt/*.pub
+src/main/resources/jwt/*.pem
