@@ -1,10 +1,15 @@
 package com.SuperToni.SuperToni.auth.registration;
 
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -25,6 +30,8 @@ import com.SuperToni.SuperToni.auth.payload.response.MessageResponse;
 import com.SuperToni.SuperToni.configuration.jwt.JwtService;
 import com.SuperToni.SuperToni.configuration.services.UserDetailsImpl;
 import com.SuperToni.SuperToni.user.UserService;
+
+import io.jsonwebtoken.JwtException;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
@@ -37,6 +44,8 @@ public class UserRegistrationController {
   private final UserRegistrationService userRegistrationService;
   private final JwtService jwtUtils;
   private final UserService userService;
+  private static final Logger logger = LoggerFactory.getLogger(UserRegistrationController.class);
+
 
 
   @Autowired
@@ -85,5 +94,40 @@ public class UserRegistrationController {
 		Boolean isValid = jwtUtils.validateJwtToken(token);
 		return ResponseEntity.ok(isValid);
 	}
+
+	@PostMapping("/token/refresh")
+	public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> request) {
+    try {
+        String refreshToken = request.get("refresh");
+        
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Refresh token is required"));
+        }
+        
+        // Validate the refresh token
+        if (!jwtUtils.validateJwtToken(refreshToken)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("Invalid refresh token"));
+        }
+        
+        // Extract username from refresh token using your existing method
+        String username = jwtUtils.extractUsername(refreshToken);
+        
+        // Generate new access token using your existing method
+        String newAccessToken = jwtUtils.generateToken(username);
+        String newRefreshToken = jwtUtils.generateToken(username);
+        
+        Map<String, String> tokens = new HashMap<>();
+        tokens.put("access", newAccessToken);
+        tokens.put("refresh", newRefreshToken);
+        
+        return ResponseEntity.ok(tokens);
+        
+    } catch (JwtException e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse("Invalid refresh token"));
+    } catch (Exception e) {
+        logger.error("Token refresh failed", e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new MessageResponse("Token refresh failed"));
+    }
+}
 
 }
